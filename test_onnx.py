@@ -163,7 +163,7 @@ def infer_yolop(weight="yolop-640-640.onnx",
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--weight', type=str, default="yolop-640-640.onnx")
-    parser.add_argument('--img', type=str, default="./inference/images/9aa94005-ff1d4c9a.jpg")
+    parser.add_argument('--img', type=str, default="./inference/images/test.jpg")
     args = parser.parse_args()
 
     infer_yolop(weight=args.weight, img_path=args.img)

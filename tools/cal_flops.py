@@ -38,20 +38,17 @@ from lib.utils.utils import save_checkpoint
 from lib.utils.utils import create_logger, select_device
 from lib.utils import run_anchor
 
-# pip install pthflops
-from pthflops import count_ops
-
 def main():
     # Create a network and a corresponding input
     device = 'cuda:0'
     model = get_net(cfg).to(device).half()
     model.eval()
-    inp = torch.rand(1,3,1152,1920).to(device).half()
+    inp = torch.rand(1,3,2304,3840).to(device).half()
     # flops_224 = count_ops(model, inp) #1.83gflops
 
     
     with torch.no_grad():
         flops, params = profile(model,(inp,))
-        print('flops:{}'.format(flops))
+        print('flops:{}GFLOPS'.format(flops/1e9 * 2)) #乘以2参考yolov7中的统计方式
 
 main()

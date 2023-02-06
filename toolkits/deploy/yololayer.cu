@@ -100,7 +100,7 @@ namespace nvinfer1
         return sizeof(mClassCount) + sizeof(mThreadCount) + sizeof(mKernelCount) + sizeof(Yolo::YoloKernel) * mYoloKernel.size() + sizeof(mYoloV5NetWidth) + sizeof(mYoloV5NetHeight) + sizeof(mMaxOutObject);
     }
 
-    int YoloLayerPlugin::initialize()
+    int YoloLayerPlugin::initialize() noexcept override
     {
         return 0;
     }
@@ -253,12 +253,11 @@ namespace nvinfer1
         }
     }
 
-
-    int YoloLayerPlugin::enqueue(int batchSize, const void*const * inputs, void** outputs, void* workspace, cudaStream_t stream)
-    {
-        forwardGpu((const float *const *)inputs, (float*)outputs[0], stream, batchSize);
-        return 0;
-    }
+    // int YoloLayerPlugin::enqueue(int batchSize, const void*const * inputs, void** outputs, void* workspace, cudaStream_t stream) override
+    // {
+    //     forwardGpu((const float *const *)inputs, (float*)outputs[0], stream, batchSize);
+    //     return 0;
+    // }
 
     PluginFieldCollection YoloPluginCreator::mFC{};
     std::vector<PluginField> YoloPluginCreator::mPluginAttributes;

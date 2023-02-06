@@ -15,11 +15,6 @@ void keyboard_handler(int sig) {
 int main(int argc, char** argv) {
     signal(SIGINT, keyboard_handler);
     cudaSetDevice(DEVICE);
-    // CUcontext ctx;
-    // CUdevice device;
-    // cuInit(0);
-    // cuDeviceGet(&device, 0);
-    // cuCtxCreate(&ctx, 0, device);
 
     std::string wts_name = "yolop.wts";
     std::string engine_name = "yolop.engine";
@@ -27,7 +22,7 @@ int main(int argc, char** argv) {
     // deserialize the .engine and run inference
     std::ifstream file(engine_name, std::ios::binary);
     if (!file.good()) {
-        // std::cerr << "read " << engine_name << " error!" << std::endl;
+        std::cerr << "read " << engine_name << " error!" << std::endl;
         std::cout << "Building engine..." << std::endl;
         IHostMemory* modelStream{ nullptr };
         APIToModel(BATCH_SIZE, &modelStream, wts_name);

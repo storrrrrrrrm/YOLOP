@@ -1,3 +1,4 @@
+import time
 import torch
 from torch import tensor
 import torch.nn as nn
@@ -494,7 +495,7 @@ YOLOP = [
 [ -1, BottleneckCSP, [128, 64, 1, False]],  #36
 [ -1, Conv, [64, 32, 3, 1]],    #37
 [ -1, Upsample, [None, 2, 'nearest']],  #38
-[ -1, Conv, [32, 16, 3, 1]],    #39
+[ -1, Conv, [32, 16, 3, 1]],    #39 
 [ -1, BottleneckCSP, [16, 8, 1, False]],    #40
 [ -1, Upsample, [None, 2, 'nearest']],  #41
 [ -1, Conv, [8, 2, 3, 1]] #42 Lane line segmentation head
@@ -513,7 +514,9 @@ class MCnet(nn.Module):
 
         # Build model
         for i, (from_, block, args) in enumerate(block_cfg[1:]):
+            # print('before type is {}'.format(type(block)))
             block = eval(block) if isinstance(block, str) else block  # eval strings
+            # print('after type is {}'.format(type(block)))
             if block is Detect:
                 self.detector_index = i
             block_ = block(*args)
@@ -544,22 +547,53 @@ class MCnet(nn.Module):
         initialize_weights(self)
 
     def forward(self, x):
+        print('x.shape:{}'.format(x.shape))
         cache = []
         out = []
         det_out = None
         Da_fmap = []
         LL_fmap = []
+        backbone_neck_layer_idx=[i for i in range(16)]
+        backbone_neck_layer_compute_time=0
+        detection_layer_idx=[i for i in range(16,25)]
+        detection_layer_compute_time=0
+        driving_area_segmentation_layer_idx=[i for i in range(25,34)]
+        driving_area_segmentation_compute_time=0
+        lane_line_segmentation_layer_idx=[i for i in range(34,42)]
+        lane_line_segmentation_compute_time=0
+
         for i, block in enumerate(self.model):
             if block.from_ != -1:
                 x = cache[block.from_] if isinstance(block.from_, int) else [x if j == -1 else cache[j] for j in block.from_]       #calculate concat detect
+            t0 = time.time()
             x = block(x)
+
+            # print('layer i:{},block:{}'.format(i,block))
             if i in self.seg_out_idx:     #save driving area segment result
                 m=nn.Sigmoid()
                 out.append(m(x))
             if i == self.detector_index:
                 det_out = x
             cache.append(x if block.index in self.save else None)
+
+            t1 = time.time()
+            print('layer i:{},compute_time:{}'.format(i,t1-t0))
+            if i in backbone_neck_layer_idx:
+                backbone_neck_layer_compute_time += (t1-t0)
+            if i in detection_layer_idx:
+                detection_layer_compute_time += (t1-t0)
+            if i in driving_area_segmentation_layer_idx:
+                driving_area_segmentation_compute_time += (t1-t0)
+            if i in lane_line_segmentation_layer_idx:
+                lane_line_segmentation_compute_time += (t1-t0)
+
         out.insert(0,det_out)
+        
+        print('backbone_neck_layer_compute_time:{}'.format(backbone_neck_layer_compute_time))
+        print('detection_layer_compute_time:{}'.format(detection_layer_compute_time))
+        print('driving_area_segmentation_compute_time:{}'.format(driving_area_segmentation_compute_time))
+        print('lane_line_segmentation_compute_time:{}'.format(lane_line_segmentation_compute_time))
+
         return out
             
     
@@ -575,6 +609,9 @@ class MCnet(nn.Module):
             mi.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
 
 def get_net(cfg, **kwargs): 
+    print('cfg :{}'.format(cfg))
+    for key, value in kwargs. items () :
+        print("{0} == {1}". format (key, value) )
     m_block_cfg = YOLOP
     model = MCnet(m_block_cfg, **kwargs)
     return model

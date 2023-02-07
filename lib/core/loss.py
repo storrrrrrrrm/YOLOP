@@ -113,6 +113,7 @@ class MultiHeadLoss(nn.Module):
 
         lane_line_seg_predicts = predictions[2].view(-1)
         lane_line_seg_targets = targets[2].view(-1)
+        print('lane_line_seg_predicts:{},lane_line_seg_targets'.format(lane_line_seg_predicts,lane_line_seg_targets))
         lseg_ll = BCEseg(lane_line_seg_predicts, lane_line_seg_targets)
 
         metric = SegmentationMetric(2)

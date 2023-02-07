@@ -164,20 +164,27 @@ if __name__ == "__main__":
     inputs = torch.randn(1, 3, height, width)
 
     print(f"Converting to {onnx_path}")
+    # torch.onnx.export(model, inputs, onnx_path,
+    #                   verbose=False, opset_version=12, input_names=['images'],
+    #                   output_names=['det_out', 'drive_area_seg', 'lane_line_seg'])
     torch.onnx.export(model, inputs, onnx_path,
                       verbose=False, opset_version=12, input_names=['images'],
-                      output_names=['det_out', 'drive_area_seg', 'lane_line_seg'])
+                      output_names=['det_out', 'drive_area_seg', 'lane_line_seg'],
+                        dynamic_axes={
+                            "images": {2:"height",3: "width"},
+                        }
+                      )
     print('convert', onnx_path, 'to onnx finish!!!')
     # Checks
     model_onnx = onnx.load(onnx_path)  # load onnx model
     onnx.checker.check_model(model_onnx)  # check onnx model
     print(onnx.helper.printable_graph(model_onnx.graph))  # print
 
-    if do_simplify:
-        print(f'simplifying with onnx-simplifier {onnxsim.__version__}...')
-        model_onnx, check = onnxsim.simplify(model_onnx, check_n=3)
-        assert check, 'assert check failed'
-        onnx.save(model_onnx, onnx_path)
+    # if do_simplify:
+    #     print(f'simplifying with onnx-simplifier {onnxsim.__version__}...')
+    #     model_onnx, check = onnxsim.simplify(model_onnx, check_n=3)
+    #     assert check, 'assert check failed'
+    #     onnx.save(model_onnx, onnx_path)
 
     x = inputs.cpu().numpy()
     try:

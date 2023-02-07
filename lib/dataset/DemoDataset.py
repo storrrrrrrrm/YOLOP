@@ -85,9 +85,12 @@ class LoadImages:  # for inference
             h0, w0 = img0.shape[:2]
 
         # Padded resize
+        t0=time.time()
         img, ratio, pad = letterbox_for_img(img0, new_shape=self.img_size, auto=True)
         h, w = img.shape[:2]
         shapes = (h0, w0), ((h / h0, w / w0), pad)
+        t1=time.time()
+        print('preprocess_time:{}'.format(t1-t0))
 
         # Convert
         #img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
